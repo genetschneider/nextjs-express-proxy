@@ -7,6 +7,8 @@ const dev = process.env.NODE_ENV !== "production";
 const app = next({ dev });
 const handle = app.getRequestHandler();
 
+const htmlCache = {};
+
 async function renderAndCache(req, res) {
   const pathPieces = req.path.split("/");
   const locale =
@@ -20,6 +22,14 @@ async function renderAndCache(req, res) {
     locale,
   });
 
+  const cacheK = `${locale}~${cleanPath}`;
+
+  if (htmlCache[cacheK]) {
+    res.send(htmlCache[cacheK]);
+
+    return;
+  }
+
   const html = await app.renderToHTML(req, res, cleanPath, {
     ...req.query,
     // Pass locale data from a custom server
@@ -27,8 +37,15 @@ async function renderAndCache(req, res) {
     __nextDefaultLocale: i18n.defaultLocale,
   });
 
+  // cache html if you want
+
   if (res.headersSent) {
     return;
+  }
+
+  if (res.statusCode === 200) {
+	console.log('Cached HTML!');
+    htmlCache[cacheK] = html;
   }
 
   res.send(html);
@@ -39,6 +56,7 @@ async function renderAndCache(req, res) {
 
   const server = express();
 
+  server.all("/api*", handle);
   server.get("/_next/data/:bundleId/:locale/:path", (req, res) => {
     // redirect configuration
     const redirects = {

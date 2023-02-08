@@ -46,7 +46,7 @@ export default function Home({ random }) {
 }
 
 export const getServerSideProps = async () => {
-  await sleep(500);
+  await sleep(2000);
 
   return {
     props: {

@@ -3,6 +3,8 @@ import NProgress from "nprogress";
 import { Router } from "next/router";
 import Head from "next/head";
 import { LangPicker } from "../components/lang-picker";
+import { UserContextProvider } from "../context/user-context";
+import { OwnHead } from "../components/head";
 
 Router.events.on("routeChangeStart", (url) => {
   NProgress.start();
@@ -25,7 +27,10 @@ function MyApp({ Component, pageProps }) {
         />
       </Head>
       <LangPicker />
-      <Component {...pageProps} />
+      <UserContextProvider>
+        <OwnHead />
+        <Component {...pageProps} />
+      </UserContextProvider>
     </>
   );
 }
