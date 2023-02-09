@@ -1,11 +1,13 @@
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { useUserContext } from "../context/user-context";
 import styles from "../styles/Home.module.css";
 import { sleep } from "../utils";
 
 export default function Home({ random }) {
   const { locale } = useRouter();
+  const user = useUserContext();
 
   return (
     <div className={styles.container}>
@@ -19,6 +21,8 @@ export default function Home({ random }) {
         <h1 className={styles.title}>Welcome to Next.js!</h1>
         <h3 className={styles.title}>SSR: {random}</h3>
 
+        {user ? <p>{user.name}</p> : <></>}
+
         <Link className={styles.description} locale={locale} href="/about">
           Click here to navigate
         </Link>
@@ -31,7 +35,7 @@ export default function Home({ random }) {
         >
           Click here to redirect successfully through express
         </Link>
-        
+
         <Link
           className={styles.description}
           prefetch={false}

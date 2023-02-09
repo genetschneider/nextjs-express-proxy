@@ -10,22 +10,24 @@ const handle = app.getRequestHandler();
 const htmlCache = {};
 
 async function renderAndCache(req, res) {
+  const n = performance.now();
   const pathPieces = req.path.split("/");
   const locale =
     i18n.locales.find((l) => l === pathPieces[1]) || i18n.defaultLocale;
 
   const cleanPath = req.path.replace(`/${locale}`, "") || "/";
 
-  console.info({
-    rawPath: req.path,
-    pathSentToNextjs: cleanPath,
-    locale,
-  });
+  //console.info({
+  //  rawPath: req.path,
+  //  pathSentToNextjs: cleanPath,
+  //  locale,
+  //});
 
   const cacheK = `${locale}~${cleanPath}`;
 
   if (htmlCache[cacheK]) {
     res.send(htmlCache[cacheK]);
+    console.log(cacheK, "(cached) handle took", performance.now() - n);
 
     return;
   }
@@ -44,9 +46,10 @@ async function renderAndCache(req, res) {
   }
 
   if (res.statusCode === 200) {
-	console.log('Cached HTML!');
     htmlCache[cacheK] = html;
   }
+
+  console.log(cacheK, "(NOT-cached) handle took", performance.now() - n);
 
   res.send(html);
 }
@@ -56,6 +59,7 @@ async function renderAndCache(req, res) {
 
   const server = express();
 
+  server.get('/favicon.ico', (req, res) => res.status(404).send(''));
   server.all("/api*", handle);
   server.get("/_next/data/:bundleId/:locale/:path", (req, res) => {
     // redirect configuration
